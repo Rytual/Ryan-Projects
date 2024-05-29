@@ -2,22 +2,14 @@ from pyspark.sql import SparkSession
 import boto3
 from io import StringIO
 
-# Initialize Spark session
-spark = SparkSession.builder \
-    .appName("ETL Job") \
-    .getOrCreate()
-
-# Database connection parameters
-server = '192.168.1.156'  # Your SQL Server IP address
-database = 'AdventureWorksDW2022'  # Your database name
-username = 'your_sql_username'  # Your SQL Server username
-password = 'your_sql_password'  # Your SQL Server password
-jdbc_url = f"jdbc:sqlserver://{server};databaseName={database}"
-
 # AWS S3 parameters
 s3_bucket_name = 'rytualetlprojectbucket'  # Your S3 bucket name
-s3_key = 'data/currency_data.csv'  # Desired S3 key (file path)
-aws_region = 'us-east-2'  # Your AWS region
+s3_key = 'scripts/etl_job_cluster_test.py'  # Desired S3 key (file path)
+
+# Spark session
+spark = SparkSession.builder \
+    .appName("ETLJob") \
+    .getOrCreate()
 
 # SQL query to extract data
 sql_query = """
@@ -28,24 +20,18 @@ WHERE CurrencyKey < 5;
 
 # Connect to SQL Server and fetch data
 print("Connecting to SQL Server...")
-df = spark.read.format("jdbc") \
-    .option("url", jdbc_url) \
-    .option("dbtable", f"({sql_query}) as subquery") \
-    .option("user", username) \
-    .option("password", password) \
-    .option("driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver") \
-    .load()
+# Code to connect to SQL Server and fetch data using PyODBC goes here
 
-print("Data fetched successfully.")
+# Mocking data retrieval with pandas DataFrame for demonstration
+import pandas as pd
+data = pd.DataFrame({'CurrencyName': ['Afghani', 'Algerian Dinar', 'Argentine Peso', 'Armenian Dram']})
 
-# Convert DataFrame to CSV and upload to S3
+# Convert DataFrame to Spark DataFrame
+spark_df = spark.createDataFrame(data)
+
+# Write Spark DataFrame to S3 as CSV
+print("Writing data to S3...")
 csv_buffer = StringIO()
-df.toPandas().to_csv(csv_buffer, index=False)
+spark_df.write.csv(f"s3://{s3_bucket_name}/{s3_key}", mode='overwrite', header=True)
 
-print("Uploading data to S3...")
-s3_client = boto3.client('s3', region_name=aws_region)
-s3_client.put_object(Bucket=s3_bucket_name, Key=s3_key, Body=csv_buffer.getvalue())
-print("Data has been uploaded to S3 successfully.")
-
-# Stop Spark session
-spark.stop()
+print("Data has been written to S3 successfully.")

@@ -1,0 +1,22 @@
+Your recent learnings
+When you left 0 days ago, you worked on The Python Ecosystem, the first chapter of the course Intermediate Python for Developers. Here is what you covered in your last lesson:
+
+You learned about the fundamentals of control flow in R, focusing on conditional statements like if, else, and else if. These statements allow you to execute different blocks of code based on certain conditions. Key points include:
+
+Relational Operators: Used to compare R objects, determining how they relate to each other.
+Logical Operators: Allow for combining TRUE and FALSE values, crucial for constructing conditions in control flow statements.
+if Statement: Executes a block of code if a specified condition is TRUE. For instance, if (x < 0) { print("x is a negative number!") } checks if x is less than zero and prints a message if TRUE.
+else Statement: Runs a block of code when the if condition is FALSE. It does not require a condition by itself.
+else if Statement: Provides additional conditions to check if the initial if condition is FALSE. It allows for more complex decision-making paths.
+Here's an example of using these statements together:
+
+if (x < 0) {
+  print("x is a negative number!")
+} else if (x == 0) {
+  print("x is zero")
+} else {
+  print("x is a positive number")
+}
+This structure lets you handle multiple conditions by executing different code blocks based on the value of x, demonstrating the power of conditional statements in controlling the flow of your R scripts.
+
+The goal of the next lesson is to introduce how to apply logical operators in R for advanced data analysis and manipulation tasks.

@@ -4,16 +4,16 @@ import boto3
 from io import StringIO
 
 # Database connection parameters
-server = 'localhost'  # Replace with your SQL Server name or IP address
-database = 'AdventureWorksDW2022'  # Your database name
-driver = '{ODBC Driver 17 for SQL Server}'  # Ensure you have the correct ODBC driver installed
+server = 'localhost'  # Replace with SQL Server name or IP address
+database = 'AdventureWorksDW2022'  # Database name
+driver = '{ODBC Driver 17 for SQL Server}'  # Ensure the correct ODBC driver installed
 
 # AWS S3 parameters
-s3_bucket_name = 'rytualetlprojectbucket'  # Your S3 bucket name
+s3_bucket_name = 'rytualetlprojectbucket'  # S3 bucket name
 s3_key = 'data/currency_data.csv'  # Desired S3 key (file path)
 
 # AWS Region
-aws_region = 'us-east-2'  # Your AWS region
+aws_region = 'us-east-2'  # AWS region
 
 # SQL query to extract data
 sql_query = """

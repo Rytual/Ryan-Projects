@@ -1,0 +1,103 @@
+Sure, let's break down the code piece by piece to understand its functionality.
+
+### Imports
+```python
+import pyodbc
+import pandas as pd
+import boto3
+from io import StringIO
+import time
+```
+- **pyodbc**: Used to connect to and interact with the SQL Server database.
+- **pandas**: A powerful data manipulation library for Python. Used to handle and manipulate the data retrieved from the database.
+- **boto3**: The AWS SDK for Python, used to interact with AWS services such as S3.
+- **StringIO**: A module from the io package that allows for string buffer manipulation, enabling data to be written to a string buffer as if it were a file.
+- **time**: A module providing various time-related functions.
+
+### Database and AWS S3 Parameters
+```python
+# Database connection parameters
+server = 'localhost'  # Replace with the SQL Server name or IP address
+database = 'AdventureWorksDW2022'  # Database name
+driver = '{ODBC Driver 17 for SQL Server}'  # Ensure the correct ODBC driver is installed
+
+# AWS S3 parameters
+s3_bucket_name = 'rytualetlprojectbucket'  # S3 bucket name
+
+# AWS Region
+aws_region = 'us-east-2'  # AWS region
+```
+- These parameters define the connection details for the SQL Server and the AWS S3 bucket.
+
+### Tables and File Numbers
+```python
+# List of tables to extract data from
+tables = ['DimAccount', 'DimDepartmentGroup', 'DimEmployee', 'DimGeography', 'DimOrganization', 'DimProduct']
+
+# Keep track of file numbers for each table
+file_numbers = {table: 1 for table in tables}
+```
+- **tables**: A list of table names from which data will be extracted.
+- **file_numbers**: A dictionary to keep track of the sequential file numbers for each table.
+
+### ETL Process Function
+```python
+# Function to perform the ETL process for a given table
+def etl_process(table, file_number):
+    # SQL query to extract data
+    sql_query = f"SELECT * FROM {table};"
+
+    # Connect to SQL Server and fetch data
+    print(f"Connecting to SQL Server to fetch data from {table}...")
+    conn = pyodbc.connect(f'DRIVER={driver};SERVER={server};DATABASE={database};Trusted_Connection=yes;')
+    print(f"Executing query for {table}...")
+    data = pd.read_sql(sql_query, conn)
+    print(f"Data fetched successfully from {table}.")
+    conn.close()
+
+    # Convert DataFrame to CSV
+    csv_buffer = StringIO()
+    data.to_csv(csv_buffer, index=False)
+
+    # Define S3 key with sequential numbering
+    s3_key = f"data/{table}_currency_data{file_number}.csv"
+
+    # Upload to S3
+    print(f"Uploading data to S3 for {table} as {s3_key}...")
+    s3_client = boto3.client('s3', region_name=aws_region)
+    s3_client.put_object(Bucket=s3_bucket_name, Key=s3_key, Body=csv_buffer.getvalue())
+    print(f"Data has been uploaded to S3 successfully for {table}.")
+```
+- **etl_process**: A function that takes a table name and a file number as arguments and performs the ETL process.
+- **sql_query**: A SQL query to select all data from the specified table.
+- **pyodbc.connect**: Connects to the SQL Server using the provided connection parameters.
+- **pd.read_sql**: Executes the SQL query and fetches the data into a pandas DataFrame.
+- **StringIO**: Used to create an in-memory string buffer to hold the CSV data.
+- **data.to_csv**: Converts the DataFrame to a CSV format and writes it to the string buffer.
+- **s3_key**: Defines the S3 object key (file path) with sequential numbering.
+- **boto3.client**: Creates an S3 client.
+- **s3_client.put_object**: Uploads the CSV data to the specified S3 bucket and key.
+
+### Main Loop
+```python
+# Loop to run the ETL process for each table every 3 minutes for 12 minutes
+start_time = time.time()
+end_time = start_time + 12 * 60  # Run for 12 minutes
+
+while time.time() < end_time:
+    for table in tables:
+        etl_process(table, file_numbers[table])
+        file_numbers[table] += 1
+    time.sleep(3 * 60)  # Wait for 3 minutes before the next run
+
+print("ETL process completed.")
+```
+- **start_time**: The current time when the script starts.
+- **end_time**: The end time calculated as 12 minutes from the start time.
+- **while time.time() < end_time**: A loop that runs until the current time exceeds the end time.
+- **for table in tables**: Iterates over each table in the tables list.
+- **etl_process(table, file_numbers[table])**: Calls the ETL process for the current table with its current file number.
+- **file_numbers[table] += 1**: Increments the file number for the current table.
+- **time.sleep(3 * 60)**: Waits for 3 minutes before starting the next iteration of the loop.
+
+The script ensures that the ETL process is executed for each table every 3 minutes, with each output file having a unique, sequential name.

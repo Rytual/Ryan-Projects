@@ -1,0 +1,4 @@
+select name, title
+from movie
+join director
+on director.id = movie.director_id;
